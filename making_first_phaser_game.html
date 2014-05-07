@@ -34,6 +34,8 @@ var stars;
 var score = 0;
 var scoreText;
 
+var gameOver;
+
 var enemy;
 
 function create() {
@@ -71,9 +73,6 @@ function create() {
 	player.body.gravity.y = 300;
 	player.body.collideWorldBounds = true;
 
-	//player health
-	player.health = 50;
-
 	//walk left and walk right animation
 	player.animations.add('left', [0, 1, 2, 3], 10, true); 	//(direction, frames, frame per sec, enable to loop)
 	player.animations.add('right', [5, 6, 7, 8], 10, true);
@@ -102,10 +101,27 @@ function create() {
 
 	/* Create enemies */
 
-	enemy = game.add.sprite(200, game.world.height - 100, 'baddie');
+	enemy = game.add.sprite(200, game.world.height - 94, 'baddie');
 
-	var tweenemy = game.add.tween(enemy).to({ x: 600 }, 1500, Phaser.Easing.Linear.None).to({ x: 300}, 1500, Phaser.Easing.Linear.None).loop().start();
+	var tweenemy = game.add.tween(enemy).to({ x: 600 }, 1500, Phaser.Easing.Linear.None, true, 0, Number.MAX_VALUE, true)
+	.to({ x: 300}, 1500, Phaser.Easing.Linear.None, true, 0, Number.MAX_VALUE, true)
+	.loop()
+	.start();
 
+	//Add animations!
+	//Need both left and righ, depending on path direction?
+
+
+	/* Game over line */
+
+	gameOver = game.add.text(game.world.centerX, 200, '', {font: '50px Courier', fill: '#000'});
+	gameOver.anchor.setTo(0.5);
+
+
+	/* Victory line */
+
+	victory = game.add.text(game.world.centerX, 200, '', {font: '50px Courier', fill: '#000'});
+	victory.anchor.setTo(0.5);
 
 }
 
@@ -113,7 +129,7 @@ function update() {
 
 	game.physics.arcade.collide(player, platforms);
 	game.physics.arcade.collide(stars, platforms);
-	game.physics.arcade.collide(enemy, player);
+	//no physics enabled on enemy, otherwise tween wasn't working
 
 	game.physics.arcade.overlap(player, stars, collectStar, null, this);
 
@@ -136,7 +152,10 @@ function update() {
 
 	} else if (cursors.down.isDown){
 
+		//speed up fall
 		player.body.velocity.y = 350;
+
+		//what if left or right is still down?
 
 	} else {
 
@@ -146,12 +165,28 @@ function update() {
 
 	}
 
-	//jump is up arrow is pressed and caracter is touching the ground
+	//jump if up arrow is pressed and caracter is touching the ground
 	if(cursors.up.isDown && player.body.touching.down){
 
 		player.body.velocity.y = -325;
 
 	}
+
+	//check if enemy and player are overlaping
+	if(checkOverLap(player, enemy)){
+		baddieTouch(enemy, player);
+	}
+
+
+
+}
+
+function checkOverLap(spriteA, spriteB){
+
+	var boundsA = spriteA.getBounds();
+	var boundsB = spriteB.getBounds();
+
+	return Phaser.Rectangle.intersects(boundsA, boundsB);
 
 }
 
@@ -162,15 +197,20 @@ function collectStar(player, star){
 	score += 10; 	//score increases by 10
 	scoreText.text = 'Score: ' + score; 		//displays the actual score
 
+	if(score == 120){
+		victory.text = 'Victory!';	//if all the stars have been collected, display Victory!
+
+		//add some kind of end, kill all enemies or freeze everything?
+	}
+
 }
 
-function baddieTouch(baddie, player){
+function baddieTouch(player, baddie){
 
-	player.kill();
+	baddie.kill();
+	gameOver.text = 'Game over :/'; 
 
 }
-
-//http://www.html5gamedevs.com/topic/5056-arcade-overlap-collision-bug/
 
 </script>
 
