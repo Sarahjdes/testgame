@@ -28,13 +28,17 @@ function preload() {
 
 var platforms;
 var player;
+var health;
+
 var cursors;
+var rKey;
 
 var stars;
 var score = 0;
 var scoreText;
 
 var gameOver;
+var tryAgain;
 
 var enemy;
 
@@ -76,6 +80,8 @@ function create() {
 	//walk left and walk right animation
 	player.animations.add('left', [0, 1, 2, 3], 10, true); 	//(direction, frames, frame per sec, enable to loop)
 	player.animations.add('right', [5, 6, 7, 8], 10, true);
+
+	player.health = 50;
 
 
 	/* Create stars */
@@ -123,6 +129,16 @@ function create() {
 	victory = game.add.text(game.world.centerX, 200, '', {font: '50px Courier', fill: '#000'});
 	victory.anchor.setTo(0.5);
 
+
+	/* Try again */
+
+	tryAgain = game.add.text(game.world.centerX, 350, '', {font: '35px Courier', fill: '#000'});
+	tryAgain.anchor.setTo(0.5);
+
+
+	/* R Key */
+	
+
 }
 
 function update() {
@@ -150,7 +166,7 @@ function update() {
 		player.body.velocity.x = 150;
 		player.animations.play('right');
 
-	} else if (cursors.down.isDown){
+	} else if (cursors.down.isDown ){
 
 		//speed up fall
 		player.body.velocity.y = 350;
@@ -177,8 +193,11 @@ function update() {
 		baddieTouch(enemy, player);
 	}
 
-
-
+	//press R to retry
+	if(game.input.keyboard.isDown(Phaser.Keyboard.R)){
+		player.reset(32, game.world.height - 150);
+		restart();
+	}
 }
 
 function checkOverLap(spriteA, spriteB){
@@ -210,6 +229,14 @@ function baddieTouch(player, baddie){
 	baddie.kill();
 	gameOver.text = 'Game over :/'; 
 
+	tryAgain.text = 'Try again? (R)';
+
+}
+
+function restart(){
+	score = 0;
+	gameOver.text = '';
+	tryAgain.text = '';
 }
 
 </script>
